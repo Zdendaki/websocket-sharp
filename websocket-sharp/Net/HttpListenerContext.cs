@@ -37,291 +37,268 @@
  */
 #endregion
 
-using System;
 using System.Security.Principal;
 using System.Text;
 using WebSocketSharp.Net.WebSockets;
 
 namespace WebSocketSharp.Net
 {
-  /// <summary>
-  /// Provides the access to the HTTP request and response objects used by
-  /// the <see cref="HttpListener"/> class.
-  /// </summary>
-  /// <remarks>
-  /// This class cannot be inherited.
-  /// </remarks>
-  public sealed class HttpListenerContext
-  {
-    #region Private Fields
-
-    private HttpConnection               _connection;
-    private string                       _errorMessage;
-    private int                          _errorStatusCode;
-    private HttpListener                 _listener;
-    private HttpListenerRequest          _request;
-    private HttpListenerResponse         _response;
-    private IPrincipal                   _user;
-    private HttpListenerWebSocketContext _websocketContext;
-
-    #endregion
-
-    #region Internal Constructors
-
-    internal HttpListenerContext (HttpConnection connection)
+    /// <summary>
+    /// Provides the access to the HTTP request and response objects used by
+    /// the <see cref="HttpListener"/> class.
+    /// </summary>
+    /// <remarks>
+    /// This class cannot be inherited.
+    /// </remarks>
+    public sealed class HttpListenerContext
     {
-      _connection = connection;
+        #region Private Fields
 
-      _errorStatusCode = 400;
-      _request = new HttpListenerRequest (this);
-      _response = new HttpListenerResponse (this);
-    }
+        private readonly HttpConnection _connection;
+        private string _errorMessage;
+        private int _errorStatusCode;
+        private HttpListener _listener;
+        private readonly HttpListenerRequest _request;
+        private readonly HttpListenerResponse _response;
+        private IPrincipal _user;
+        private HttpListenerWebSocketContext _websocketContext;
 
-    #endregion
+        #endregion
 
-    #region Internal Properties
+        #region Internal Constructors
 
-    internal HttpConnection Connection {
-      get {
-        return _connection;
-      }
-    }
+        internal HttpListenerContext(HttpConnection connection)
+        {
+            _connection = connection;
 
-    internal string ErrorMessage {
-      get {
-        return _errorMessage;
-      }
+            _errorStatusCode = 400;
+            _request = new HttpListenerRequest(this);
+            _response = new HttpListenerResponse(this);
+        }
 
-      set {
-        _errorMessage = value;
-      }
-    }
+        #endregion
 
-    internal int ErrorStatusCode {
-      get {
-        return _errorStatusCode;
-      }
+        #region Internal Properties
 
-      set {
-        _errorStatusCode = value;
-      }
-    }
+        internal HttpConnection Connection => _connection;
 
-    internal bool HasErrorMessage {
-      get {
-        return _errorMessage != null;
-      }
-    }
+        internal string ErrorMessage
+        {
+            get => _errorMessage;
 
-    internal HttpListener Listener {
-      get {
-        return _listener;
-      }
+            set => _errorMessage = value;
+        }
 
-      set {
-        _listener = value;
-      }
-    }
+        internal int ErrorStatusCode
+        {
+            get => _errorStatusCode;
 
-    #endregion
+            set => _errorStatusCode = value;
+        }
 
-    #region Public Properties
+        internal bool HasErrorMessage => _errorMessage != null;
 
-    /// <summary>
-    /// Gets the HTTP request object that represents a client request.
-    /// </summary>
-    /// <value>
-    /// A <see cref="HttpListenerRequest"/> that represents the client request.
-    /// </value>
-    public HttpListenerRequest Request {
-      get {
-        return _request;
-      }
-    }
+        internal HttpListener Listener
+        {
+            get => _listener;
 
-    /// <summary>
-    /// Gets the HTTP response object used to send a response to the client.
-    /// </summary>
-    /// <value>
-    /// A <see cref="HttpListenerResponse"/> that represents a response to
-    /// the client request.
-    /// </value>
-    public HttpListenerResponse Response {
-      get {
-        return _response;
-      }
-    }
+            set => _listener = value;
+        }
 
-    /// <summary>
-    /// Gets the client information (identity, authentication, and security
-    /// roles).
-    /// </summary>
-    /// <value>
-    ///   <para>
-    ///   A <see cref="IPrincipal"/> instance or <see langword="null"/>
-    ///   if not authenticated.
-    ///   </para>
-    ///   <para>
-    ///   The instance describes the client.
-    ///   </para>
-    /// </value>
-    public IPrincipal User {
-      get {
-        return _user;
-      }
+        #endregion
 
-      internal set {
-        _user = value;
-      }
-    }
+        #region Public Properties
 
-    #endregion
+        /// <summary>
+        /// Gets the HTTP request object that represents a client request.
+        /// </summary>
+        /// <value>
+        /// A <see cref="HttpListenerRequest"/> that represents the client request.
+        /// </value>
+        public HttpListenerRequest Request => _request;
 
-    #region Private Methods
+        /// <summary>
+        /// Gets the HTTP response object used to send a response to the client.
+        /// </summary>
+        /// <value>
+        /// A <see cref="HttpListenerResponse"/> that represents a response to
+        /// the client request.
+        /// </value>
+        public HttpListenerResponse Response => _response;
 
-    private static string createErrorContent (
+        /// <summary>
+        /// Gets the client information (identity, authentication, and security
+        /// roles).
+        /// </summary>
+        /// <value>
+        ///   <para>
+        ///   A <see cref="IPrincipal"/> instance or <see langword="null"/>
+        ///   if not authenticated.
+        ///   </para>
+        ///   <para>
+        ///   The instance describes the client.
+        ///   </para>
+        /// </value>
+        public IPrincipal User
+        {
+            get => _user;
+
+            internal set => _user = value;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private static string createErrorContent(
       int statusCode, string statusDescription, string message
     )
-    {
-      return message != null && message.Length > 0
-             ? String.Format (
-                 "<html><body><h1>{0} {1} ({2})</h1></body></html>",
-                 statusCode,
-                 statusDescription,
-                 message
-               )
-             : String.Format (
-                 "<html><body><h1>{0} {1}</h1></body></html>",
-                 statusCode,
-                 statusDescription
-               );
-    }
+        {
+            return message != null && message.Length > 0
+                   ? string.Format(
+                       "<html><body><h1>{0} {1} ({2})</h1></body></html>",
+                       statusCode,
+                       statusDescription,
+                       message
+                     )
+                   : string.Format(
+                       "<html><body><h1>{0} {1}</h1></body></html>",
+                       statusCode,
+                       statusDescription
+                     );
+        }
 
-    #endregion
+        #endregion
 
-    #region Internal Methods
+        #region Internal Methods
 
-    internal HttpListenerWebSocketContext GetWebSocketContext (string protocol)
-    {
-      _websocketContext = new HttpListenerWebSocketContext (this, protocol);
+        internal HttpListenerWebSocketContext GetWebSocketContext(string protocol)
+        {
+            _websocketContext = new HttpListenerWebSocketContext(this, protocol);
 
-      return _websocketContext;
-    }
+            return _websocketContext;
+        }
 
-    internal void SendAuthenticationChallenge (
-      AuthenticationSchemes scheme, string realm
-    )
-    {
-      _response.StatusCode = 401;
+        internal void SendAuthenticationChallenge(
+          AuthenticationSchemes scheme, string realm
+        )
+        {
+            _response.StatusCode = 401;
 
-      var chal = new AuthenticationChallenge (scheme, realm).ToString ();
-      _response.Headers.InternalSet ("WWW-Authenticate", chal, true);
+            string? chal = new AuthenticationChallenge(scheme, realm).ToString();
+            _response.Headers.InternalSet("WWW-Authenticate", chal, true);
 
-      _response.Close ();
-    }
+            _response.Close();
+        }
 
-    internal void SendError ()
-    {
-      try {
-        _response.StatusCode = _errorStatusCode;
-        _response.ContentType = "text/html";
+        internal void SendError()
+        {
+            try
+            {
+                _response.StatusCode = _errorStatusCode;
+                _response.ContentType = "text/html";
 
-        var content = createErrorContent (
+                string? content = createErrorContent(
                         _errorStatusCode,
                         _response.StatusDescription,
                         _errorMessage
                       );
 
-        var enc = Encoding.UTF8;
-        var entity = enc.GetBytes (content);
+                Encoding? enc = Encoding.UTF8;
+                byte[]? entity = enc.GetBytes(content);
 
-        _response.ContentEncoding = enc;
-        _response.ContentLength64 = entity.LongLength;
+                _response.ContentEncoding = enc;
+                _response.ContentLength64 = entity.LongLength;
 
-        _response.Close (entity, true);
-      }
-      catch {
-        _connection.Close (true);
-      }
-    }
-
-    internal void SendError (int statusCode)
-    {
-      _errorStatusCode = statusCode;
-
-      SendError ();
-    }
-
-    internal void SendError (int statusCode, string message)
-    {
-      _errorStatusCode = statusCode;
-      _errorMessage = message;
-
-      SendError ();
-    }
-
-    internal void Unregister ()
-    {
-      if (_listener == null)
-        return;
-
-      _listener.UnregisterContext (this);
-    }
-
-    #endregion
-
-    #region Public Methods
-
-    /// <summary>
-    /// Accepts a WebSocket handshake request.
-    /// </summary>
-    /// <returns>
-    /// A <see cref="HttpListenerWebSocketContext"/> that represents
-    /// the WebSocket handshake request.
-    /// </returns>
-    /// <param name="protocol">
-    /// A <see cref="string"/> that specifies the subprotocol supported on
-    /// the WebSocket connection.
-    /// </param>
-    /// <exception cref="ArgumentException">
-    ///   <para>
-    ///   <paramref name="protocol"/> is empty.
-    ///   </para>
-    ///   <para>
-    ///   -or-
-    ///   </para>
-    ///   <para>
-    ///   <paramref name="protocol"/> contains an invalid character.
-    ///   </para>
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// This method has already been called.
-    /// </exception>
-    public HttpListenerWebSocketContext AcceptWebSocket (string protocol)
-    {
-      if (_websocketContext != null) {
-        var msg = "The accepting is already in progress.";
-
-        throw new InvalidOperationException (msg);
-      }
-
-      if (protocol != null) {
-        if (protocol.Length == 0) {
-          var msg = "An empty string.";
-
-          throw new ArgumentException (msg, "protocol");
+                _response.Close(entity, true);
+            }
+            catch
+            {
+                _connection.Close(true);
+            }
         }
 
-        if (!protocol.IsToken ()) {
-          var msg = "It contains an invalid character.";
+        internal void SendError(int statusCode)
+        {
+            _errorStatusCode = statusCode;
 
-          throw new ArgumentException (msg, "protocol");
+            SendError();
         }
-      }
 
-      return GetWebSocketContext (protocol);
+        internal void SendError(int statusCode, string message)
+        {
+            _errorStatusCode = statusCode;
+            _errorMessage = message;
+
+            SendError();
+        }
+
+        internal void Unregister()
+        {
+            if (_listener == null)
+                return;
+
+            _listener.UnregisterContext(this);
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Accepts a WebSocket handshake request.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="HttpListenerWebSocketContext"/> that represents
+        /// the WebSocket handshake request.
+        /// </returns>
+        /// <param name="protocol">
+        /// A <see cref="string"/> that specifies the subprotocol supported on
+        /// the WebSocket connection.
+        /// </param>
+        /// <exception cref="ArgumentException">
+        ///   <para>
+        ///   <paramref name="protocol"/> is empty.
+        ///   </para>
+        ///   <para>
+        ///   -or-
+        ///   </para>
+        ///   <para>
+        ///   <paramref name="protocol"/> contains an invalid character.
+        ///   </para>
+        /// </exception>
+        /// <exception cref="InvalidOperationException">
+        /// This method has already been called.
+        /// </exception>
+        public HttpListenerWebSocketContext AcceptWebSocket(string protocol)
+        {
+            if (_websocketContext != null)
+            {
+                string? msg = "The accepting is already in progress.";
+
+                throw new InvalidOperationException(msg);
+            }
+
+            if (protocol != null)
+            {
+                if (protocol.Length == 0)
+                {
+                    string? msg = "An empty string.";
+
+                    throw new ArgumentException(msg, "protocol");
+                }
+
+                if (!protocol.IsToken())
+                {
+                    string? msg = "It contains an invalid character.";
+
+                    throw new ArgumentException(msg, "protocol");
+                }
+            }
+
+            return GetWebSocketContext(protocol);
+        }
+
+        #endregion
     }
-
-    #endregion
-  }
 }
